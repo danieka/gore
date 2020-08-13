@@ -2,27 +2,19 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
+
+	"github.com/danieka/gore/internal/interactiveserver"
+	"github.com/danieka/gore/internal/reports"
+	"github.com/danieka/gore/internal/sources"
 
 	"gopkg.in/yaml.v2"
 )
 
-// InputConfig defines a source
-type InputConfig struct {
-	Type     string
-	Host     string
-	Port     string
-	Database string
-	Username string
-	Password string
-}
-
 // Config is the config for the file
 type Config struct {
-	Inputs map[string]InputConfig
+	Sources map[string]sources.SourceConfig
 }
 
 func check(e error) {
@@ -30,8 +22,6 @@ func check(e error) {
 		panic(e)
 	}
 }
-
-var inputs map[string]Input = make(map[string]Input)
 
 func main() {
 	data, err := ioutil.ReadFile("config.yaml")
@@ -42,8 +32,8 @@ func main() {
 	err = yaml.Unmarshal([]byte(data), &config)
 	check(err)
 
-	for k, v := range config.Inputs {
-		inputs[k] = MakeSQLInput(v)
+	for k, v := range config.Sources {
+		sources.MakeSQLSource(k, v)
 	}
 
 	file, err := os.Open("test.rpt")
@@ -51,14 +41,9 @@ func main() {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	_, err = MakeReport(scanner)
+	err = reports.MakeReport(scanner)
 	check(err)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Welcome to my website!")
-	})
-
-	fmt.Println("Starting server")
-	err = http.ListenAndServe(":16772", nil)
+	err = interactiveserver.Start()
 	check(err)
 }

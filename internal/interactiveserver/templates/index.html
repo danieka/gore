@@ -1,0 +1,10 @@
+{{ define "content" }}
+<h1>Reports</h1>
+<ul>
+    {{ range .Reports }}
+    <li>
+       <a href="/reports/{{.Info.Name}}">{{ .Info.Name}}</a> 
+    </li>
+    {{ end }}
+</ul>
+{{ end }}
