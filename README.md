@@ -32,6 +32,15 @@ name: test
 <source sql>
 SELECT email FROM user
 </source>
+<output json>
+[
+    {{ range .Rows }}
+    {
+        "email": "{{ .email }}",
+    },
+    {{ end }}
+]
+</output>
 ```
 
 Save this file as `test.rpt` in the repository. Now you can start Gore with `go run *.go`. Gore will now start a web server and your report will be accesible on `http://localhost:16772/`.

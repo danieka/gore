@@ -2,7 +2,9 @@ package reports
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"html/template"
 	"log"
 
 	"github.com/danieka/gore/internal/sources"
@@ -21,20 +23,46 @@ type ReportSource struct {
 	query      string
 }
 
+// ReportOutput contains info on the output
+type ReportOutput struct {
+	format   string
+	template string
+}
+
 // Report is the main struct for a report
 type Report struct {
-	Info   ReportInfo
-	source ReportSource
+	Info    ReportInfo
+	source  ReportSource
+	outputs map[string]ReportOutput
 }
 
 // Execute the report and return the output
-func (r *Report) Execute() (s string, err error) {
+func (r *Report) Execute(format string) (s string, err error) {
 	source := sources.Sources[r.source.sourceName]
 	if source == nil {
 		return "", fmt.Errorf("Unable to find source %s", r.source.sourceName)
 	}
 	rows, err := sources.Sources[r.source.sourceName].Execute(r.source.query)
-	return fmt.Sprintf("%v", rows), err
+
+	output, ok := r.outputs[format]
+	if !ok {
+		return "", fmt.Errorf("Unable to find output format %s", format)
+	}
+
+	tmpl, err := template.New("").Parse(output.template)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	err = tmpl.ExecuteTemplate(&buf, "", map[string]interface{}{
+		"Rows": rows,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	return buf.String(), err
 }
 
 // Reports contain all reports that have been read
@@ -77,9 +105,29 @@ L:
 	}
 }
 
+func parseOutput(scanner *bufio.Scanner) (output ReportOutput) {
+	var data string
+L:
+	for scanner.Scan() {
+		text := scanner.Text()
+		switch text {
+		case "</output>":
+			break L
+		default:
+			data = data + text + "\n"
+		}
+	}
+	return ReportOutput{
+		format:   "json",
+		template: data,
+	}
+}
+
 // MakeReport takes a scanner to a .rpt file, reads it and stores in the global Report map
 func MakeReport(scanner *bufio.Scanner) (err error) {
 	var report Report
+	report.outputs = make(map[string]ReportOutput)
+
 	for scanner.Scan() {
 		text := scanner.Text()
 		switch text {
@@ -93,6 +141,9 @@ func MakeReport(scanner *bufio.Scanner) (err error) {
 		case "<source sql>":
 			source := parseSource(scanner)
 			report.source = source
+		case "<output json>":
+			output := parseOutput(scanner)
+			report.outputs[output.format] = output
 		default:
 			log.Fatal("Unrecognized tag " + text)
 		}

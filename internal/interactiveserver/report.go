@@ -23,7 +23,7 @@ func report(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 	report := reports.Reports[name]
-	output, err := report.Execute()
+	output, err := report.Execute("json")
 	if err != nil {
 		log.Println(err)
 	}
