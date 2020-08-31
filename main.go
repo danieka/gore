@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/danieka/gore/internal/server"
+
 	"github.com/danieka/gore/internal/interactiveserver"
 	"github.com/danieka/gore/internal/reports"
 	"github.com/danieka/gore/internal/sources"
@@ -134,6 +136,9 @@ func main() {
 
 	if interactiveMode {
 		err = interactiveserver.Start()
+		check(err)
+	} else {
+		err = server.Start()
 		check(err)
 	}
 }
