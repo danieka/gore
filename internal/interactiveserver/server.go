@@ -9,9 +9,10 @@ import (
 
 // Start the interactive web server
 func Start() error {
-	r := mux.NewRouter()
+	r := mux.NewRouter().StrictSlash(true)
 	r.HandleFunc("/", index)
-	r.HandleFunc("/reports/{name}", report)
+	r.HandleFunc("/reports/", index)
+	r.HandleFunc("/reports/{name}/", report)
 
 	http.Handle("/", r)
 
