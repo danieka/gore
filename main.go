@@ -71,6 +71,7 @@ func startWatcher() {
 					log.Println("Reloading report: ", event.Name)
 					err := loadReport(event.Name)
 					check(err)
+					interactiveserver.TriggerReload()
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {

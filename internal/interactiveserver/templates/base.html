@@ -12,6 +12,14 @@
 <body>
     {{ template "content" . }}
 </body>
+<script>
+var eventSocket = new WebSocket("ws://localhost:16772/ws");
+eventSocket.onmessage = function (event) {
+    if(event.data === "reload") {
+        window.location.reload()
+    }
+}
+</script>
 
 </html>
 {{ end }}
