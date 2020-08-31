@@ -2,7 +2,10 @@ package main
 
 import (
 	"bufio"
+	"flag"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -11,6 +14,7 @@ import (
 	"github.com/danieka/gore/internal/reports"
 	"github.com/danieka/gore/internal/sources"
 
+	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,7 +29,11 @@ func check(e error) {
 	}
 }
 
+var watcher *fsnotify.Watcher
+
 var isGoreFile = regexp.MustCompile(`.gore$`)
+
+var watchMode bool
 
 func walkDir(root string) ([]string, error) {
 	var files []string
@@ -34,6 +42,10 @@ func walkDir(root string) ([]string, error) {
 		if !info.IsDir() {
 			if isGoreFile.MatchString(path) {
 				files = append(files, path)
+				if watchMode {
+					fmt.Println("adding to watcher", path)
+					watcher.Add(path)
+				}
 			}
 		}
 		return nil
@@ -41,7 +53,58 @@ func walkDir(root string) ([]string, error) {
 	return files, err
 }
 
+func startWatcher() {
+	var err error
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("Reloading report: ", event.Name)
+					err := loadReport(event.Name)
+					check(err)
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Println("error:", err)
+			}
+		}
+	}()
+}
+
+func loadReport(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	return reports.MakeReport(scanner)
+}
+
+func init() {
+	flag.BoolVar(&watchMode, "w", false, "Watch .gore files for changes and reload reports on changes")
+}
+
 func main() {
+	flag.Parse()
+
+	if watchMode {
+		startWatcher()
+		defer watcher.Close()
+	}
+
 	data, err := ioutil.ReadFile("config.yaml")
 	check(err)
 
@@ -60,12 +123,7 @@ func main() {
 	files, err := walkDir(wd)
 
 	for _, path := range files {
-		file, err := os.Open(path)
-		check(err)
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		err = reports.MakeReport(scanner)
+		loadReport(path)
 		check(err)
 	}
 

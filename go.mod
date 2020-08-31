@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/canthefason/go-watcher v0.2.4 // indirect
 	github.com/fatih/color v1.9.0 // indirect
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/mux v1.7.4
 	github.com/mitranim/gow v0.0.0-20200811065821-e3aeb285f27a // indirect
