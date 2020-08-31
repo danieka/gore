@@ -34,6 +34,7 @@ var watcher *fsnotify.Watcher
 var isGoreFile = regexp.MustCompile(`.gore$`)
 
 var watchMode bool
+var interactiveMode bool
 
 func walkDir(root string) ([]string, error) {
 	var files []string
@@ -71,7 +72,9 @@ func startWatcher() {
 					log.Println("Reloading report: ", event.Name)
 					err := loadReport(event.Name)
 					check(err)
-					interactiveserver.TriggerReload()
+					if interactiveMode {
+						interactiveserver.TriggerReload()
+					}
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
@@ -96,6 +99,7 @@ func loadReport(path string) error {
 
 func init() {
 	flag.BoolVar(&watchMode, "w", false, "Watch .gore files for changes and reload reports on changes")
+	flag.BoolVar(&interactiveMode, "i", false, "Run server in interactive mode (suitable for development)")
 }
 
 func main() {
@@ -128,6 +132,8 @@ func main() {
 		check(err)
 	}
 
-	err = interactiveserver.Start()
-	check(err)
+	if interactiveMode {
+		err = interactiveserver.Start()
+		check(err)
+	}
 }

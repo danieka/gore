@@ -62,7 +62,7 @@ func Start() error {
 
 	go eventLoop()
 
-	fmt.Println("Starting server on :16772")
+	fmt.Println("Starting interactive server on :16772")
 	err := http.ListenAndServe(":16772", nil)
 	return err
 }
