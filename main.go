@@ -36,7 +36,7 @@ func main() {
 		sources.MakeSQLSource(k, v)
 	}
 
-	file, err := os.Open("test.rpt")
+	file, err := os.Open("test.gore")
 	check(err)
 	defer file.Close()
 

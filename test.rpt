@@ -1,0 +1,16 @@
+<info>
+name: test
+</info>
+<source sql>
+SELECT id, description FROM article
+</source>
+<output json>
+[
+    {{ range .Rows }}
+    {
+        "id": "{{ .id }}",
+        "description": "{{ .description }}",
+    },
+    {{ end }}
+]
+</output>

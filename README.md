@@ -2,7 +2,7 @@
 
 Gore is a reporting server that makes it easy to write and manange you data reports.
 
-Reports are a written in a single `.rpt` file and contains both a query for getting data from an input source and one or many formatters for outputting the data. The outputs of these reports are then exposed through a REST API. So Gore handles all the shuffling of data, you just decleratively define what data you want formatted how. Gore handles fetching data, rendering outputs and serving the finished reports.
+Reports are a written in a single `gore` file and contains both a query for getting data from an input source and one or many formatters for outputting the data. The outputs of these reports are then exposed through a REST API. So Gore handles all the shuffling of data, you just decleratively define what data you want formatted how. Gore handles fetching data, rendering outputs and serving the finished reports.
 
 
 Supported input formats are MySQL.
@@ -47,7 +47,7 @@ SELECT id, description FROM article
 </output>
 ```
 
-Save this file as `test.rpt` in the repository. Now you can start Gore with `go run *.go`. Gore will now start a web server and your report will be accesible on `http://localhost:16772/report/{id}`.
+Save this file as `test.gore` in the repository. Now you can start Gore with `go run *.go`. Gore will now start a web server and your report will be accesible on `http://localhost:16772/report/{id}`.
 
 The `info` section contains metadata about the report. The `id` attribute is used when accessing the report through the rest API.
 

@@ -123,7 +123,7 @@ L:
 	}
 }
 
-// MakeReport takes a scanner to a .rpt file, reads it and stores in the global Report map
+// MakeReport takes a scanner to a .gore file, reads it and stores in the global Report map
 func MakeReport(scanner *bufio.Scanner) (err error) {
 	var report Report
 	report.outputs = make(map[string]ReportOutput)
