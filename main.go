@@ -27,7 +27,7 @@ type Config struct {
 
 func check(e error) {
 	if e != nil {
-		panic(e)
+		log.Fatal(e)
 	}
 }
 
@@ -113,7 +113,9 @@ func main() {
 	}
 
 	data, err := ioutil.ReadFile("config.yaml")
-	check(err)
+	if err != nil {
+		log.Fatalf("Failed to open config file: %s", err.Error())
+	}
 
 	config := Config{}
 
