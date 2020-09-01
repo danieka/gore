@@ -19,7 +19,7 @@ func report(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	err = reportTemplate.ExecuteTemplate(w, "base", map[string]interface{}{
+	err = reportTemplate.Execute(w, map[string]interface{}{
 		"Report": report,
 		"Output": output,
 	})

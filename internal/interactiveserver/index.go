@@ -11,7 +11,7 @@ import (
 var indexTemplate *template.Template
 
 func index(w http.ResponseWriter, r *http.Request) {
-	err := indexTemplate.ExecuteTemplate(w, "base", map[string]interface{}{
+	err := indexTemplate.Execute(w, map[string]interface{}{
 		"Reports": reports.Reports,
 	})
 	if err != nil {

@@ -12,7 +12,6 @@ import (
 )
 
 var box = packr.NewBox("./templates")
-var baseTemplate *template.Template
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -20,18 +19,17 @@ var upgrader = websocket.Upgrader{
 }
 
 func init() {
-	s, err := box.FindString("base.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-	baseTemplate = template.Must(template.New("base").Parse(s))
-
-	s, err = box.FindString("index.html")
+	baseString, err := box.FindString("base.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	indexTemplate, err = baseTemplate.New("").Parse(s)
+	s, err := box.FindString("index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	indexTemplate, err = template.Must(template.New("base").Parse(baseString)).New("content").Parse(s)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +39,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	reportTemplate, err = baseTemplate.New("").Parse(s)
+	reportTemplate, err = template.Must(template.New("base").Parse(baseString)).New("content").Parse(s)
 	if err != nil {
 		log.Fatal(err)
 	}
