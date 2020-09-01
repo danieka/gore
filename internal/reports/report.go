@@ -26,7 +26,7 @@ type ReportSource struct {
 
 // ReportOutput contains info on the output
 type ReportOutput struct {
-	format   string
+	Format   string
 	template string
 }
 
@@ -34,7 +34,7 @@ type ReportOutput struct {
 type Report struct {
 	Info    ReportInfo
 	source  ReportSource
-	outputs map[string]ReportOutput
+	Outputs map[string]ReportOutput
 }
 
 // Execute the report and return the output
@@ -45,7 +45,7 @@ func (r *Report) Execute(format string) (s string, err error) {
 	}
 	cols, rows, err := sources.Sources[r.source.sourceName].Execute(r.source.query)
 
-	output, ok := r.outputs[format]
+	output, ok := r.Outputs[format]
 	if !ok {
 		return "", fmt.Errorf("Unable to find output format %s", format)
 	}
@@ -113,7 +113,7 @@ func parseOutput(scanner *bufio.Scanner) (output ReportOutput) {
 	tokens := strings.Split(openingTag, " ")
 	for _, value := range tokens {
 		if value == "csv" || value == "json" {
-			output.format = value
+			output.Format = value
 		}
 	}
 	var data string
@@ -128,11 +128,11 @@ L:
 		}
 	}
 	output.template = data
-	if output.format == "" {
+	if output.Format == "" {
 		panic("No valid output format")
 	}
 	if output.template == "" {
-		output.template = defaultReports[output.format]
+		output.template = defaultReports[output.Format]
 	}
 	return output
 }
@@ -140,7 +140,7 @@ L:
 // MakeReport takes a scanner to a .gore file, reads it and stores in the global Report map
 func MakeReport(scanner *bufio.Scanner) (err error) {
 	var report Report
-	report.outputs = make(map[string]ReportOutput)
+	report.Outputs = make(map[string]ReportOutput)
 
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -157,7 +157,7 @@ func MakeReport(scanner *bufio.Scanner) (err error) {
 			report.source = source
 		case strings.Contains(text, "<output"):
 			output := parseOutput(scanner)
-			report.outputs[output.format] = output
+			report.Outputs[output.Format] = output
 		default:
 			log.Fatal("Unrecognized tag " + text)
 		}

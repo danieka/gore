@@ -1,6 +1,7 @@
 package interactiveserver
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -15,9 +16,16 @@ func report(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 	report := reports.Reports[name]
-	output, err := report.Execute("json")
+
+	format := "json"
+	query := r.URL.Query()
+	val, present := query["format"]
+	if present {
+		format = val[0]
+	}
+	output, err := report.Execute(format)
 	if err != nil {
-		log.Println(err)
+		output = fmt.Sprintf("Format %s not available for report", format)
 	}
 	err = reportTemplate.Execute(w, map[string]interface{}{
 		"Report": report,
