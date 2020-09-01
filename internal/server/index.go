@@ -20,7 +20,7 @@ var templateStr = `
 	{{end}}
 	{
 		"name": "{{$value.Info.Name}}",
-		"url": "{{$host}}/reports/{{$value.Info.Name}}/"
+		"url": "{{$host}}/reports/{{$value.Info.Name}}"
 	}
 {{end}}
 ]

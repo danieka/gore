@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"strings"
 
 	"github.com/danieka/gore/internal/sources"
 
@@ -106,6 +107,14 @@ L:
 }
 
 func parseOutput(scanner *bufio.Scanner) (output ReportOutput) {
+	openingTag := scanner.Text()
+	openingTag = openingTag[1 : len(openingTag)-1]
+	tokens := strings.Split(openingTag, " ")
+	for _, value := range tokens {
+		if value == "csv" || value == "json" {
+			output.format = value
+		}
+	}
 	var data string
 L:
 	for scanner.Scan() {
@@ -117,10 +126,11 @@ L:
 			data = data + text + "\n"
 		}
 	}
-	return ReportOutput{
-		format:   "json",
-		template: data,
+	output.template = data
+	if output.format == "" {
+		panic("No valid output format")
 	}
+	return output
 }
 
 // MakeReport takes a scanner to a .gore file, reads it and stores in the global Report map
@@ -130,18 +140,18 @@ func MakeReport(scanner *bufio.Scanner) (err error) {
 
 	for scanner.Scan() {
 		text := scanner.Text()
-		switch text {
-		case "<info>":
+		switch {
+		case text == "<info>":
 			var info ReportInfo
 			info, err = parseInfo(scanner)
 			if err != nil {
 				return
 			}
 			report.Info = info
-		case "<source sql>":
+		case text == "<source sql>":
 			source := parseSource(scanner)
 			report.source = source
-		case "<output json>":
+		case strings.Contains(text, "<output"):
 			output := parseOutput(scanner)
 			report.outputs[output.format] = output
 		default:
