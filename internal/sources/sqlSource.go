@@ -56,7 +56,6 @@ func (i *sqlInput) Execute(query string) (cols []string, rows []Row, err error) 
 			if ok {
 				m[colName] = string(f)
 			} else {
-				fmt.Println(*val)
 				m[colName] = *val
 			}
 		}
