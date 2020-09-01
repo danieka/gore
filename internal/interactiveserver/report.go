@@ -11,14 +11,6 @@ import (
 
 var reportTemplate *template.Template
 
-func init() {
-	var err error
-	reportTemplate, err = template.New("").ParseFiles("internal/interactiveserver/templates/report.html", "internal/interactiveserver/templates/base.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func report(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]

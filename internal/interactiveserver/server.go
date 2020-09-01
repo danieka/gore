@@ -2,16 +2,49 @@ package interactiveserver
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/gobuffalo/packr"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
+var box = packr.NewBox("./templates")
+var baseTemplate *template.Template
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+}
+
+func init() {
+	s, err := box.FindString("base.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	baseTemplate = template.Must(template.New("base").Parse(s))
+
+	s, err = box.FindString("index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	indexTemplate, err = baseTemplate.New("").Parse(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s, err = box.FindString("report.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reportTemplate, err = baseTemplate.New("").Parse(s)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func websocketHandler(w http.ResponseWriter, r *http.Request) {
