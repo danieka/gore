@@ -43,7 +43,7 @@ func (r *Report) Execute(format string) (s string, err error) {
 	if source == nil {
 		return "", fmt.Errorf("Unable to find source %s", r.source.sourceName)
 	}
-	rows, err := sources.Sources[r.source.sourceName].Execute(r.source.query)
+	cols, rows, err := sources.Sources[r.source.sourceName].Execute(r.source.query)
 
 	output, ok := r.outputs[format]
 	if !ok {
@@ -58,6 +58,7 @@ func (r *Report) Execute(format string) (s string, err error) {
 	var buf bytes.Buffer
 	err = tmpl.ExecuteTemplate(&buf, "", map[string]interface{}{
 		"Rows": rows,
+		"Cols": cols,
 	})
 	if err != nil {
 		log.Println(err)
@@ -129,6 +130,9 @@ L:
 	output.template = data
 	if output.format == "" {
 		panic("No valid output format")
+	}
+	if output.template == "" {
+		output.template = defaultReports[output.format]
 	}
 	return output
 }

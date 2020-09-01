@@ -34,11 +34,10 @@ func eventLoop() {
 		case conn := <-register:
 			conns[conn] = true
 		case <-reload:
-			fmt.Println(conns)
 			for conn := range conns {
 				err := conn.WriteMessage(websocket.TextMessage, []byte("reload"))
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 				}
 			}
 		}
