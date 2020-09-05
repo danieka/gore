@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 
@@ -37,6 +38,7 @@ var isGoreFile = regexp.MustCompile(`.gore$`)
 
 var watchMode bool
 var interactiveMode bool
+var sourceDirectory string
 
 func walkDir(root string) ([]string, error) {
 	var files []string
@@ -99,9 +101,17 @@ func loadReport(path string) error {
 	return reports.MakeReport(scanner)
 }
 
+func join(source, target string) string {
+	if path.IsAbs(target) {
+		return target
+	}
+	return filepath.Join(source, target)
+}
+
 func init() {
 	flag.BoolVar(&watchMode, "w", false, "Watch .gore files for changes and reload reports on changes")
 	flag.BoolVar(&interactiveMode, "i", false, "Run server in interactive mode (suitable for development)")
+	flag.StringVar(&sourceDirectory, "s", "", "filesystem path where reports sources are")
 }
 
 func main() {
@@ -112,7 +122,14 @@ func main() {
 		defer watcher.Close()
 	}
 
-	data, err := ioutil.ReadFile("config.yaml")
+	wd, err := os.Getwd()
+	check(err)
+
+	if sourceDirectory != "" {
+		wd = join(wd, sourceDirectory)
+	}
+
+	data, err := ioutil.ReadFile(filepath.Join(wd, "config.yaml"))
 	if err != nil {
 		log.Fatalf("Failed to open config file: %s", err.Error())
 	}
@@ -125,9 +142,6 @@ func main() {
 	for k, v := range config.Sources {
 		sources.MakeSQLSource(k, v)
 	}
-
-	wd, err := os.Getwd()
-	check(err)
 
 	files, err := walkDir(wd)
 

@@ -65,5 +65,7 @@ gore [flags]
 
 ```
   -i	Run server in interactive mode (suitable for development)
+  -s string
+    	filesystem path where reports sources are
   -w	Watch .gore files for changes and reload reports on changes
 ```
