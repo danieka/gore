@@ -44,6 +44,9 @@ func (r *Report) Execute(format string) (s string, err error) {
 		return "", fmt.Errorf("Unable to find source %s", r.source.sourceName)
 	}
 	cols, rows, err := sources.Sources[r.source.sourceName].Execute(r.source.query)
+	if err != nil {
+		return "", fmt.Errorf("Error executing report %s", err)
+	}
 
 	output, ok := r.Outputs[format]
 	if !ok {
