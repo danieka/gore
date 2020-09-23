@@ -3,6 +3,8 @@ module github.com/danieka/gore
 go 1.14
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize v1.4.1
+	github.com/360EntSecGroup-Skylar/excelize/v2 v2.3.1 // indirect
 	github.com/canthefason/go-watcher v0.2.4 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9

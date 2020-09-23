@@ -8,6 +8,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/danieka/gore/internal/sources"
 
 	"gopkg.in/yaml.v2"
@@ -37,6 +38,8 @@ type Report struct {
 	Outputs map[string]ReportOutput
 }
 
+var columnNames []string = []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"}
+
 // Execute the report and return the output
 func (r *Report) Execute(format string) (s string, err error) {
 	source := sources.Sources[r.source.sourceName]
@@ -53,18 +56,38 @@ func (r *Report) Execute(format string) (s string, err error) {
 		return "", fmt.Errorf("Unable to find output format %s", format)
 	}
 
-	tmpl, err := template.New("").Parse(output.template)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var buf bytes.Buffer
-	err = tmpl.ExecuteTemplate(&buf, "", map[string]interface{}{
-		"Rows": rows,
-		"Cols": cols,
-	})
-	if err != nil {
-		log.Println(err)
+
+	if format == "xlsx" {
+		f := excelize.NewFile()
+		for i, v := range cols {
+			f.SetCellValue("Sheet1", columnNames[i]+"1", v)
+		}
+		for rowIndex, row := range rows {
+			for columnIndex, colName := range cols {
+				f.SetCellValue("Sheet1", fmt.Sprintf("%s%d", columnNames[columnIndex], rowIndex+2), row[colName])
+			}
+		}
+		// Save xlsx file by the given path.
+		bufP, err := f.WriteToBuffer()
+		if err != nil {
+			log.Fatal(err)
+		}
+		buf = *bufP
+	} else {
+		var tmpl *template.Template
+		tmpl, err = template.New("").Parse(output.template)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = tmpl.ExecuteTemplate(&buf, "", map[string]interface{}{
+			"Rows": rows,
+			"Cols": cols,
+		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	return buf.String(), err
@@ -115,7 +138,7 @@ func parseOutput(scanner *bufio.Scanner) (output ReportOutput) {
 	openingTag = openingTag[1 : len(openingTag)-1]
 	tokens := strings.Split(openingTag, " ")
 	for _, value := range tokens {
-		if value == "csv" || value == "json" {
+		if value == "csv" || value == "json" || value == "xlsx" {
 			output.Format = value
 		}
 	}
@@ -132,7 +155,7 @@ L:
 	}
 	output.template = data
 	if output.Format == "" {
-		panic("No valid output format")
+		panic("Not a valid output format")
 	}
 	if output.template == "" {
 		output.template = defaultReports[output.Format]
