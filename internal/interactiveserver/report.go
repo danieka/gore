@@ -24,12 +24,15 @@ func report(w http.ResponseWriter, r *http.Request) {
 		format = val[0]
 	}
 	output, err := report.Execute(format)
+	var errorString string
 	if err != nil {
-		output = fmt.Sprintf("Format %s not available for report", format)
+		errorString = fmt.Sprintf("Error executing forma %s: %s", format, err)
 	}
-	err = reportTemplate.Execute(w, map[string]interface{}{
+	err = reportTemplate.ExecuteTemplate(w, "base", map[string]interface{}{
 		"Report": report,
 		"Output": output,
+		"Format": format,
+		"Error":  errorString,
 	})
 	if err != nil {
 		log.Println(err)

@@ -1,6 +1,22 @@
 {{ define "content" }}
+
 <h1> Report: {{ .Report.Info.Name }}</h1>
+<h2>Available formats</h2>
+{{ range $format := .Report.Outputs }}
+<a href="?format={{$format.Format}}">{{$format.Format}}</a>
+{{end}}
+
+{{ if not (eq .Error "")}}
+<h2>Error</h2>
+{{ .Error }}
+{{ end }}
+
 <h2>Output</h2>
-{{ range $format := .Report.Outputs }}<a href="?format={{$format.Format}}">{{$format.Format}}</a>{{end}}
+{{ if eq .Format "csv" }}
+<table id="output-table"></table>
+<script>populateCsvTable('output-table', {{ .Output }})</script>
+{{ else }}
 <pre>{{ .Output }}</pre>
+{{ end }}
+
 {{ end }}
