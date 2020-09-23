@@ -23,7 +23,7 @@ func report(w http.ResponseWriter, r *http.Request) {
 	if present {
 		format = val[0]
 	}
-	output, err := report.Execute(format)
+	output, err := report.Execute(format, r.URL.Query())
 	var errorString string
 	if err != nil {
 		errorString = fmt.Sprintf("Error executing forma %s: %s", format, err)

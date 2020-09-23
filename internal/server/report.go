@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -10,7 +11,7 @@ import (
 
 var formatContentType map[string]string = map[string]string{
 	"csv":  "text/csv",
-	"xlxs": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
 
 func report(w http.ResponseWriter, r *http.Request) {
@@ -28,8 +29,9 @@ func report(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := report.Execute(format)
+	output, err := report.Execute(format, r.URL.Query())
 	if err != nil {
+		fmt.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500: " + err.Error()))
 		return

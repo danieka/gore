@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net/url"
 	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
@@ -14,9 +15,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Parameter for the sql query
+type Parameter struct {
+	Name    string
+	Default string
+}
+
 // ReportInfo contains all metadata about a report
 type ReportInfo struct {
-	Name string
+	Name       string
+	Parameters []Parameter
 }
 
 // ReportSource is the data source for the report
@@ -41,19 +49,32 @@ type Report struct {
 var columnNames []string = []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"}
 
 // Execute the report and return the output
-func (r *Report) Execute(format string) (s string, err error) {
+func (r *Report) Execute(format string, arguments url.Values) (s string, err error) {
 	source := sources.Sources[r.source.sourceName]
 	if source == nil {
 		return "", fmt.Errorf("Unable to find source %s", r.source.sourceName)
 	}
-	cols, rows, err := sources.Sources[r.source.sourceName].Execute(r.source.query)
+
+	query := r.source.query
+	for _, param := range r.Info.Parameters {
+		value := param.Default
+		inputArgument := arguments.Get(param.Name)
+		if inputArgument != "" {
+			value = inputArgument
+		}
+		query = strings.ReplaceAll(query, "$"+param.Name, value)
+	}
+
+	fmt.Println(query, arguments)
+
+	cols, rows, err := sources.Sources[r.source.sourceName].Execute(query)
 	if err != nil {
-		return "", fmt.Errorf("Error executing report %s", err)
+		return "", fmt.Errorf("Error executing query %s\nComplete query was %s", err, query)
 	}
 
 	output, ok := r.Outputs[format]
 	if !ok {
-		return "", fmt.Errorf("Unable to find output format %s", format)
+		return "", fmt.Errorf("Unable to find output format %s in outputs %v", format, r.Outputs)
 	}
 
 	var buf bytes.Buffer

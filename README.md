@@ -54,7 +54,7 @@ The `source` section contains the SQL query for fetching data. If no specific so
 
 The `output` section contains a template detailing how the data should be formatted when outputted. Supported formats right now are `json`, `xlsx` and `csv` but also expect HTML and PDF in the future. Output uses the Go templating language. The variable `.Rows` is the rows resulting from the query. Also available is the `.Cols` variable which is a `[]string` of the column names from the database.
 
-If you you leave the `output` tag empty Gore will use a default template. This template should be usable for most cases. XLXS only has a default format, so any custom formatting you enter will not be taken into account.
+If you you leave the `output` tag empty Gore will use a default template. This template should be usable for most cases. XLSX only has a default format, so any custom formatting you enter will not be taken into account.
 
 ## Gore command
 
