@@ -20,7 +20,20 @@ var templateStr = `
 	{{end}}
 	{
 		"name": "{{$value.Info.Name}}",
-		"url": "{{$host}}/reports/{{$value.Info.Name}}"
+		"url": "{{$host}}/reports/{{$value.Info.Name}}",
+		"parameters": [
+			{{$first2 := true}}
+			{{range $key, $param := $value.Info.Parameters }}
+			{{if $first2}}
+				{{$first2 = false}}
+			{{else}}
+				,
+			{{end}}
+			{
+				"name": "{{$param.Name}}"
+			}
+			{{end}}
+		]
 	}
 {{end}}
 ]

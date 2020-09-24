@@ -19,6 +19,7 @@ import (
 type Parameter struct {
 	Name       string
 	ColumnName string `yaml:"columnName"`
+	Comparator string
 }
 
 // ReportInfo contains all metadata about a report
@@ -61,7 +62,11 @@ func (r *Report) Execute(format string, arguments url.Values) (s string, err err
 	for _, param := range r.Info.Parameters {
 		inputArgument := arguments.Get(param.Name)
 		if inputArgument != "" {
-			wheres = append(wheres, fmt.Sprintf("%s in (?)", param.ColumnName))
+			if param.Comparator == "" {
+				wheres = append(wheres, fmt.Sprintf("%s in (?)", param.ColumnName))
+			} else {
+				wheres = append(wheres, fmt.Sprintf("%s %s ?", param.ColumnName, param.Comparator))
+			}
 			params = append(params, inputArgument)
 		}
 	}
