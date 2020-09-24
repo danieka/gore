@@ -14,15 +14,19 @@ type Row map[string]interface{}
 
 // Source is the generic input interface
 type Source interface {
-	Execute(query string) ([]string, []Row, error)
+	Execute(query string, params ...interface{}) ([]string, []Row, error)
 }
 
 type sqlInput struct {
 	conn *sql.DB
 }
 
-func (i *sqlInput) Execute(query string) (cols []string, rows []Row, err error) {
-	dbRows, err := i.conn.Query(query)
+func (i *sqlInput) Execute(query string, params ...interface{}) (cols []string, rows []Row, err error) {
+	stmt, err := i.conn.Prepare(query)
+	if err != nil {
+		return
+	}
+	dbRows, err := stmt.Query(params...)
 	if err != nil {
 		return
 	}

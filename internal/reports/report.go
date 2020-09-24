@@ -17,8 +17,8 @@ import (
 
 // Parameter for the sql query
 type Parameter struct {
-	Name    string
-	Default string
+	Name       string
+	ColumnName string `yaml:"columnName"`
 }
 
 // ReportInfo contains all metadata about a report
@@ -56,18 +56,25 @@ func (r *Report) Execute(format string, arguments url.Values) (s string, err err
 	}
 
 	query := r.source.query
+	var wheres []string
+	var params []interface{}
 	for _, param := range r.Info.Parameters {
-		value := param.Default
 		inputArgument := arguments.Get(param.Name)
 		if inputArgument != "" {
-			value = inputArgument
+			wheres = append(wheres, fmt.Sprintf("%s in (?)", param.ColumnName))
+			params = append(params, inputArgument)
 		}
-		query = strings.ReplaceAll(query, "$"+param.Name, value)
 	}
 
-	fmt.Println(query, arguments)
+	if len(wheres) > 0 {
+		query += "\nWHERE "
+		for _, clause := range wheres {
+			query += clause + " AND "
+		}
+		query += "TRUE"
+	}
 
-	cols, rows, err := sources.Sources[r.source.sourceName].Execute(query)
+	cols, rows, err := sources.Sources[r.source.sourceName].Execute(query, params...)
 	if err != nil {
 		return "", fmt.Errorf("Error executing query %s\nComplete query was %s", err, query)
 	}
