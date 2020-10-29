@@ -3,6 +3,7 @@ package reports
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -49,6 +50,15 @@ type Report struct {
 
 var columnNames []string = []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"}
 
+func jsonEscape(i string) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	// Trim the beginning and trailing " character
+	return string(b[1 : len(b)-1])
+}
+
 // Execute the report and return the output
 func (r *Report) Execute(format string, arguments url.Values) (s string, err error) {
 	source := sources.Sources[r.source.sourceName]
@@ -90,6 +100,18 @@ func (r *Report) Execute(format string, arguments url.Values) (s string, err err
 	}
 
 	var buf bytes.Buffer
+
+	if format == "json" {
+		for _, row := range rows {
+			for k, v := range row {
+				s, ok := v.(string)
+				if !ok {
+					continue
+				}
+				row[k] = jsonEscape(s)
+			}
+		}
+	}
 
 	if format == "xlsx" {
 		f := excelize.NewFile()
