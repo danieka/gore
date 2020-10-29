@@ -5,10 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"log"
 	"net/url"
 	"strings"
+	"text/template"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/danieka/gore/internal/sources"
@@ -104,11 +104,15 @@ func (r *Report) Execute(format string, arguments url.Values) (s string, err err
 	if format == "json" {
 		for _, row := range rows {
 			for k, v := range row {
-				s, ok := v.(string)
-				if !ok {
+				if v == nil {
+					row[k] = ""
 					continue
 				}
-				row[k] = jsonEscape(s)
+				s, ok := v.(string)
+				if ok {
+					row[k] = jsonEscape(s)
+					continue
+				}
 			}
 		}
 	}
