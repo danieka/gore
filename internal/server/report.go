@@ -12,6 +12,7 @@ import (
 var formatContentType map[string]string = map[string]string{
 	"csv":  "text/csv",
 	"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	"json": "application/json",
 }
 
 func report(w http.ResponseWriter, r *http.Request) {
